@@ -1,0 +1,5 @@
+*.png
+*.js
+data/county/county_v11/county_v11.geojson
+*.json
+data/teams/ALL.geojson

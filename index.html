@@ -1,0 +1,281 @@
+<!DOCTYPE html>	
+<html>
+<head>
+	
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+	
+	<style>
+		html, body, #map {
+			height: 100%;
+			width: 100%;
+			padding: 0;
+			margin: 0;
+		}
+		
+		.info {
+			padding: 6px 8px;
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px;
+			width: 250px;
+		}
+		
+		.info h4 {
+			margin: 0 0 5px;
+			color: #777;
+		}
+	</style>
+
+<script type='text/javascript' src='data/teams/ALL.js'></script>	
+<script type='text/javascript' src='data/teams/ARI/ARI.js'></script>
+<script type='text/javascript' src='data/teams/ATL/ATL.js'></script>
+<script type='text/javascript' src='data/teams/BOS/BOS.js'></script>
+<script type='text/javascript' src='data/teams/BAL/BAL.js'></script>
+<script type='text/javascript' src='data/teams/CHC/CHC.js'></script>
+<script type='text/javascript' src='data/teams/CHW/CHW.js'></script>
+<script type='text/javascript' src='data/teams/CIN/CIN.js'></script>
+<script type='text/javascript' src='data/teams/CLE/CLE.js'></script>
+<script type='text/javascript' src='data/teams/COL/COL.js'></script>
+<script type='text/javascript' src='data/teams/DET/DET.js'></script>
+<script type='text/javascript' src='data/teams/HOU/HOU.js'></script>
+<script type='text/javascript' src='data/teams/KCR/KCR.js'></script>
+<script type='text/javascript' src='data/teams/LAA/LAA.js'></script>
+<script type='text/javascript' src='data/teams/LAD/LAD.js'></script>
+<script type='text/javascript' src='data/teams/MIA/MIA.js'></script>
+<script type='text/javascript' src='data/teams/MIL/MIL.js'></script>
+<script type='text/javascript' src='data/teams/MIN/MIN.js'></script>
+<script type='text/javascript' src='data/teams/NYM/NYM.js'></script>
+<script type='text/javascript' src='data/teams/NYY/NYY.js'></script>
+<script type='text/javascript' src='data/teams/OAK/OAK.js'></script>
+<script type='text/javascript' src='data/teams/PHI/PHI.js'></script>
+<script type='text/javascript' src='data/teams/PIT/PIT.js'></script>
+<script type='text/javascript' src='data/teams/SDP/SDP.js'></script>
+<script type='text/javascript' src='data/teams/SEA/SEA.js'></script>
+<script type='text/javascript' src='data/teams/SFG/SFG.js'></script>
+<script type='text/javascript' src='data/teams/STL/STL.js'></script>
+<script type='text/javascript' src='data/teams/TBR/TBR.js'></script>
+<script type='text/javascript' src='data/teams/TEX/TEX.js'></script>
+<script type='text/javascript' src='data/teams/WSN/WSN.js'></script>
+
+<script type='text/javascript' src='data/county/county_v10/county_v10.js'></script>	
+
+	<script>
+		
+		var team_ids = [
+		"ARI"
+		, "ATL"
+		, "BOS"
+		, "BAL"
+		, "CHC"
+		, "CHW"
+		, "CIN"
+		, "CLE"
+		, "COL"
+		, "DET"
+		, "HOU"
+		, "KCR"
+		, "LAA"
+		, "LAD"
+		, "MIA"
+		, "MIL"
+		, "MIN"
+		, "NYM"
+		, "NYY"
+		, "OAK"
+		, "PHI"
+		, "PIT"
+		, "SDP"
+		, "SEA"
+		, "SFG"
+		, "STL"
+		, "TBR"
+		, "TEX"
+		, "WSN"
+		];
+		
+		var team_names = [
+		"Arizona Diamondbacks"
+		, "Atlanta Braves"
+		, "Boston Red Sox"
+		, "Baltimore Orioles"
+		, "Chicago Cubs"
+		, "Chicago White Sox"
+		, "Cinncinnati Reds"
+		, "Cleveland Indians"
+		, "Colorado Rockies"
+		, "Detroit Tigers"
+		, "Houston Astros"
+		, "Kansas City Royals"
+		, "Los Angeles Angels"
+		, "Los Angeles Dodgers"
+		, "Miami Marlins"
+		, "Milwaukee Brewers"
+		, "Minnesota Twins"
+		, "New York Mets"
+		, "New York Yankees"
+		, "Oakland Athletics"
+		, "Philadelphia Phillies"
+		, "Pittsburgh Pirates"
+		, "San Diego Padres"
+		, "Seattle Mariners"
+		, "San Francisco Giants"
+		, "St. Louis Cardinals"
+		, "Tampa Bay Rays"
+		, "Texas Rangers"
+		, "Washington Nationals"
+		
+		];
+		
+		var team_layers = [];
+	
+		$(function() {
+			
+			var map = new L.Map('map', {
+                center: [40.186903, -95.700761],
+				zoom: 5
+            });
+			
+            var layer = L.tileLayer('map_positron');
+				L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+				attribution: 'Positron | CartoDB'
+			}).addTo(map);
+			
+			var info = L.control();
+
+			info.onAdd = function (map) {
+				this._div = L.DomUtil.create('div', 'info');
+				this.update();
+				return this._div;
+			};
+
+			info.update = function (props) {
+				this._div.innerHTML = '<h4>MLB.tv Blackout Areas</h4>' +  (props ?
+					get_team_names(props.team_ids)
+					: 'Hover over an area (Try near Chicago...)');
+					
+			};
+			
+			function get_team_names(label_team_ids){
+				var arr_team_ids = label_team_ids.split(",");
+				var arr_team_names = [];
+				for (var i = 0; i < arr_team_ids.length; i++) {
+					if(team_ids.indexOf(arr_team_ids[i]) > -1){
+						var position = team_ids.indexOf(arr_team_ids[i]);
+						arr_team_names.push(team_names[position]);
+					}
+				};
+				arr_team_names.sort();
+				var label_team_names = "";
+				for (var i = 0; i < arr_team_names.length; i++) {
+					label_team_names += arr_team_names[i] + "<br/>";
+				};
+				return label_team_names;
+			}
+			
+			info.addTo(map);
+			
+			for (var i = 0; i < team_ids.length; i++) {
+				var team_layer = L.layerGroup();
+				var shape = L.geoJson(eval(team_ids[i]), {
+					style: function(feature) {
+						return {color: feature.properties.color, weight: 1, fillOpacity: .3};
+					},
+					onEachFeature: function (feature, layer) { 
+						team_layer.addLayer(layer);
+					}
+				})
+				team_layer.addTo(map);
+				team_layers.push(team_layer);
+			}
+			
+			function highlightFeature(e) {
+				
+				var layer = e.target;
+
+				layer.setStyle({
+					weight: 2,
+					color: '#000',
+					dashArray: '',
+					fillOpacity: 0
+				});
+
+				if (!L.Browser.ie && !L.Browser.opera) {
+					layer.bringToFront();
+				}
+				
+				info.update(layer.feature.properties);
+				
+			}
+			
+			function resetHighlight(e) {
+				info.update();
+				all_teams_shape.resetStyle(e.target);
+			}
+			
+			var overlayMaps = {};
+			for (var i = 0; i < team_names.length; i++) {
+				overlayMaps[team_names[i]] = team_layers[i];
+			}
+			var layer_control = L.control.layers(null, overlayMaps);
+			layer_control.addTo(map);
+			
+			var county_all_layer = L.featureGroup();
+			var county_all_shape = L.geoJson(county_all, {
+				style: function(feature) {
+					return {fillOpacity: 0, weight: 0};
+				},
+				onEachFeature: function (feature, layer) { 
+					county_all_layer.addLayer(layer);
+					layer.on({
+						mouseover: highlightFeature,
+						mouseout: resetHighlight,
+						click: highlightFeatureOnClick
+					});
+				}
+			});
+			county_all_layer.addTo(map);
+			
+			var all_teams_layer = L.featureGroup();
+			var all_teams_shape = L.geoJson(ALL, {
+				style: function(feature) {
+					return {fillOpacity: 0, weight: 0};
+				},
+				onEachFeature: function (feature, layer) { 
+					all_teams_layer.addLayer(layer);
+					layer.on({
+						mouseover: highlightFeature,
+						mouseout: resetHighlight,
+						click: highlightFeatureOnClick
+					});
+				}
+			});
+			all_teams_layer.addTo(map);
+			
+			function highlightFeatureOnClick(e) {
+				county_all_layer.setStyle({
+					weight: 0,
+					dashArray: '',
+					fillOpacity: 0
+				});
+				console.log('here');
+				highlightFeature(e);
+			}
+			
+			map.on('overlayadd',function(e) {
+				all_teams_layer.bringToFront();
+			});
+			
+			map.on('overlayremove',function(e) {
+				all_teams_layer.bringToFront();
+			});
+
+		});
+	</script>
+</head>
+<body>
+	<div id='map'></div>
+</html>
